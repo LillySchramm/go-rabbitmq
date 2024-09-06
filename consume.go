@@ -197,6 +197,8 @@ func (consumer *Consumer) initShit() error {
 	if err != nil {
 		return fmt.Errorf("declare bindings failed: %w", err)
 	}
+
+	return nil;
 }
 
 // startGoroutines declares the queue if it doesn't exist,
