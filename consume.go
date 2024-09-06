@@ -183,17 +183,17 @@ func (consumer *Consumer) CloseWithContext(ctx context.Context) {
 
 func (consumer *Consumer) initShit() error {
 	var err error
-	for _, exchangeOption := range options.ExchangeOptions {
+	for _, exchangeOption := range consumer.options.ExchangeOptions {
 		err = declareExchange(consumer.chanManager, exchangeOption)
 		if err != nil {
 			return fmt.Errorf("declare exchange failed: %w", err)
 		}
 	}
-	err = declareQueue(consumer.chanManager, options.QueueOptions)
+	err = declareQueue(consumer.chanManager, consumer.options.QueueOptions)
 	if err != nil {
 		return fmt.Errorf("declare queue failed: %w", err)
 	}
-	err = declareBindings(consumer.chanManager, options)
+	err = declareBindings(consumer.chanManager, consumer.options)
 	if err != nil {
 		return fmt.Errorf("declare bindings failed: %w", err)
 	}
