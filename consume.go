@@ -80,12 +80,12 @@ func NewConsumer(
 
 	consumer.isClosedMu.Lock()
 	defer consumer.isClosedMu.Unlock()
-	err := consumer.chanManager.QosSafe(
+	err = consumer.chanManager.QosSafe(
 		options.QOSPrefetch,
 		0,
 		options.QOSGlobal,
 	)
-	err := consumer.initShit()
+	err = consumer.initShit()
 	if err != nil {
 		return nil, err
 	}
@@ -182,6 +182,7 @@ func (consumer *Consumer) CloseWithContext(ctx context.Context) {
 }
 
 func (consumer *Consumer) initShit() error {
+	var err error
 	for _, exchangeOption := range options.ExchangeOptions {
 		err = declareExchange(consumer.chanManager, exchangeOption)
 		if err != nil {
