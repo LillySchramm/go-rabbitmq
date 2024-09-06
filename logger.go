@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/wagslane/go-rabbitmq/internal/logger"
+	"github.com/lillyschramm/go-rabbitmq/internal/logger"
 )
 
 // Logger is describes a logging structure. It can be set using
