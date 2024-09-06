@@ -78,6 +78,18 @@ func NewConsumer(
 		isClosed:                   false,
 	}
 
+	consumer.isClosedMu.Lock()
+	defer consumer.isClosedMu.Unlock()
+	err := consumer.chanManager.QosSafe(
+		options.QOSPrefetch,
+		0,
+		options.QOSGlobal,
+	)
+	err := consumer.initShit()
+	if err != nil {
+		return nil, err
+	}
+
 	return consumer, nil
 }
 
@@ -169,6 +181,23 @@ func (consumer *Consumer) CloseWithContext(ctx context.Context) {
 	consumer.cleanupResources()
 }
 
+func (consumer *Consumer) initShit() error {
+	for _, exchangeOption := range options.ExchangeOptions {
+		err = declareExchange(consumer.chanManager, exchangeOption)
+		if err != nil {
+			return fmt.Errorf("declare exchange failed: %w", err)
+		}
+	}
+	err = declareQueue(consumer.chanManager, options.QueueOptions)
+	if err != nil {
+		return fmt.Errorf("declare queue failed: %w", err)
+	}
+	err = declareBindings(consumer.chanManager, options)
+	if err != nil {
+		return fmt.Errorf("declare bindings failed: %w", err)
+	}
+}
+
 // startGoroutines declares the queue if it doesn't exist,
 // binds the queue to the routing key(s), and starts the goroutines
 // that will consume from the queue
@@ -186,19 +215,10 @@ func (consumer *Consumer) startGoroutines(
 	if err != nil {
 		return fmt.Errorf("declare qos failed: %w", err)
 	}
-	for _, exchangeOption := range options.ExchangeOptions {
-		err = declareExchange(consumer.chanManager, exchangeOption)
-		if err != nil {
-			return fmt.Errorf("declare exchange failed: %w", err)
-		}
-	}
-	err = declareQueue(consumer.chanManager, options.QueueOptions)
+
+	err = consumer.initShit()
 	if err != nil {
-		return fmt.Errorf("declare queue failed: %w", err)
-	}
-	err = declareBindings(consumer.chanManager, options)
-	if err != nil {
-		return fmt.Errorf("declare bindings failed: %w", err)
+		return err
 	}
 
 	msgs, err := consumer.chanManager.ConsumeSafe(
